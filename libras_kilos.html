@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta
+      charset="UTF-8"
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Romana</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        font-family: Arial, sans-serif;
+        background-color: #f1f1f1;
+      }
+      .contenido {
+        padding: 2rem;
+        max-width: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+      }
+      h2 {
+        color: #333;
+        text-align: center;
+      }
+      label {
+        font-size: 1.125rem;
+        display: block;
+        margin: 0.938rem 0.625rem 0 0;
+      }
+      select {
+        width: 3.75rem;
+        margin-right: 1.25rem;
+        font-size: 1rem;
+        padding: 0.375rem;
+      }
+      select:last-child {
+        margin-right: 0;
+      }
+      .resultado {
+        margin-top: 1.563rem;
+        font-size: 1.25rem;
+        color: #007b5e;
+      }
+      .contenedor-romana {
+        display: flex;
+        align-items: baseline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="contenido">
+      <h2>Libras a Kilos</h2>
+
+      <div class="contenedor-romana">
+        <label for="libras">Libras:</label>
+        <select id="libras" onchange="actualizarPeso()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+        </select>
+
+        <label for="rayitas">Rayitas:</label>
+        <select id="rayitas" onchange="actualizarPeso()">
+          <option value="0">0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+        </select>
+      </div>
+
+      <div class="resultado" id="resultado"></div>
+    </div>
+
+    <script>
+      function actualizarPeso() {
+        const libras = parseInt(document.getElementById("libras").value);
+        const rayitas = parseInt(document.getElementById("rayitas").value);
+        const totalLibras = libras + rayitas / 8;
+        let kilos = totalLibras * 0.45359237;
+
+        // Obtener décima y centésima
+        const decimal = kilos - Math.floor(kilos);
+        const decima = Math.floor(decimal * 10); // Ej: 0.18 -> 1
+        const centesima = Math.round((decimal * 100) % 10); // Ej: 0.18 -> 8
+
+        if (centesima >= 7) {
+          kilos = Math.floor(kilos) + (decima + 1) / 10;
+        } else {
+          kilos = Math.floor(kilos) + decima / 10;
+        }
+
+        document.getElementById("resultado").innerHTML =
+          `Peso total en libras: <strong>${totalLibras.toFixed(
+            2
+          )} lb</strong><br>` +
+          `Peso total en kilos: <strong>${kilos.toFixed(1)} kg</strong>`;
+      }
+      // Ejecutar al cargar
+      actualizarPeso();
+    </script>
+  </body>
+</html>
