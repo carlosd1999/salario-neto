@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta
+      charset="UTF-8"
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Calculadora de Salario Bruto con Impuesto</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+      }
+      .contenido {
+        padding: 2rem;
+        margin: 0 0.5rem;
+        max-width: 100%;
+        max-height: 100%;
+        box-sizing: border-box;
+      }
+      label,
+      input {
+        display: block;
+        margin-bottom: 10px;
+        width: 100%;
+        max-width: -webkit-fill-available;
+      }
+      button {
+        padding: 8px 16px;
+        font-weight: bold;
+      }
+      .result {
+        margin-top: 20px;
+      }
+      .result span {
+        display: block;
+        margin: 15px 0;
+      }
+      .result p {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="contenido">
+      <h2>Calculadora de salario bruto necesario</h2>
+
+      <label for="precioHora">Precio por hora deseado (₡):</label>
+      <input type="number" id="precioHora" placeholder="Ej: 1700" step="any" />
+
+      <label for="horasSemana">Horas por semana:</label>
+      <input type="number" id="horasSemana" placeholder="Ej: 60" step="any" />
+
+      <button onclick="calcular()">Calcular</button>
+
+      <div class="result" id="resultado"></div>
+    </div>
+    <script>
+      function formatCRC(monto) {
+        return (
+          "₡" +
+          monto.toLocaleString("es-CR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+            useGrouping: true,
+          })
+        );
+      }
+
+      function calcularImpuestoRenta(brutoMensual) {
+        let impuesto = 0;
+
+        const tramos = [
+          { hasta: 922000, porcentaje: 0 },
+          { hasta: 1352000, porcentaje: 0.1 },
+          { hasta: 2373000, porcentaje: 0.15 },
+          { hasta: 4745000, porcentaje: 0.2 },
+          { hasta: Infinity, porcentaje: 0.25 },
+        ];
+
+        let baseAnterior = 0;
+
+        for (let i = 0; i < tramos.length; i++) {
+          const tramo = tramos[i];
+          if (brutoMensual > tramo.hasta) {
+            impuesto += (tramo.hasta - baseAnterior) * tramo.porcentaje;
+          } else {
+            impuesto += (brutoMensual - baseAnterior) * tramo.porcentaje;
+            break;
+          }
+          baseAnterior = tramo.hasta;
+        }
+
+        return impuesto;
+      }
+
+      function calcular() {
+        const precioHora = parseFloat(
+          document.getElementById("precioHora").value
+        );
+        const horasSemana = parseFloat(
+          document.getElementById("horasSemana").value
+        );
+
+        const semanasPorMes = 4;
+        const deduccionCCSS = 0.1067;
+
+        const horasMes = horasSemana * semanasPorMes;
+        const salarioNetoDeseado = precioHora * horasSemana * semanasPorMes;
+
+        // Búsqueda binaria
+        let min = salarioNetoDeseado;
+        let max = salarioNetoDeseado * 2; // suposición segura
+        let salarioBruto = 0;
+        let netoFinal = 0;
+        let deduccion = 0;
+        let impuesto = 0;
+
+        while (max - min > 1) {
+          salarioBruto = (min + max) / 2;
+          deduccion = salarioBruto * deduccionCCSS;
+          impuesto = calcularImpuestoRenta(salarioBruto);
+          netoFinal = salarioBruto - deduccion - impuesto;
+
+          if (netoFinal > salarioNetoDeseado) {
+            max = salarioBruto;
+          } else {
+            min = salarioBruto;
+          }
+        }
+
+        salarioBruto = (min + max) / 2;
+        deduccion = salarioBruto * deduccionCCSS;
+        impuesto = calcularImpuestoRenta(salarioBruto);
+        netoFinal = salarioBruto - deduccion - impuesto;
+
+        const precioHoraBruto = salarioBruto / horasMes;
+        const totalDeducciones = impuesto + deduccion;
+
+        document.getElementById("resultado").innerHTML = `
+      <h2>Detalles</h2>
+      <hr>
+      <p>Salario bruto necesario: ${formatCRC(salarioBruto)}</p>
+      <span>Impuesto de renta: ${formatCRC(impuesto)}</span>
+      <span>Deducción CCSS (10.67%): ${formatCRC(deduccion)}</span>
+      <span>Total de deducciones: <strong>${formatCRC(
+        totalDeducciones
+      )}</strong></span>
+      <hr>
+      <span>Horas trabajadas al mes: <strong>${horasMes}</strong></span>
+      <span>Precio por hora necesario (bruto): <strong>${formatCRC(
+        precioHoraBruto
+      )}</strong></span>
+      <span>Salario neto estimado final: <strong>${formatCRC(
+        netoFinal
+      )}</strong></span>
+    `;
+      }
+    </script>
+  </body>
+</html>
